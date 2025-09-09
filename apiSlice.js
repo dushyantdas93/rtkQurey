@@ -1,13 +1,33 @@
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 
+import { axiosBaseQuery } from "./axiosBaseQuery";
+
 export const api = createApi({
-    baseQuery: fetchBaseQuery({ baseUrl: "http://localhost:3000" }),
-    tagTypes: ["Tasks"],
+    baseQuery: fetchBaseQuery({ baseUrl: "http://localhost:3000" }), // replace fetchBaseQuery to axiosBaseQuery()
+    tagTypes: ["Tasks", "Customer"], //,"DeclarationOfFunction"
     endpoints: (builder) => ({
         getTasks: builder.query({
             query: () => "/tasks",
             transformResponse: (tasks) => tasks.reverse(),
-            providesTags: ["Tasks"],
+            providesTags: ["Tasks"], // ,"sayThisIsMyFnNameForCall"
+        }),
+        getCustomers: builder.query({
+            query: ({ page = 0, size = 10, filter = {},token }) => ({
+                url: "/customers/search",
+                method: "POST",
+                params: { page, limit },
+                body: filter,
+                // headers: {                 // this is option if your base url is not allready added header
+                //     Authorization: `Bearer ${token}`, // add token here
+                //     "Content-Type": "application/json",
+                // },
+                // headers: {
+                //     Authorization: `Bearer ${localStorage.getItem("token") || ""}`,
+                //     "Content-Type": "application/json",
+                // },
+            }),
+            transformResponse: (customNameOfThisParameter) => customNameOfThisParameter.reverse(),
+            providesTags: ["Customer"],
         }),
         addTask: builder.mutation({
             query: (task) => ({
@@ -15,7 +35,7 @@ export const api = createApi({
                 method: "POST",
                 body: task,
             }),
-            invalidatesTags: ["Tasks"],
+            invalidatesTags: ["Tasks"], // ,"DeclareFnNameCallHereAfterMutation"
             async onQueryStarted(task, { dispatch, queryFulfilled }) {
                 const patchResult = dispatch(
                     api.util.updateQueryData("getTasks", undefined, (draft) => {
